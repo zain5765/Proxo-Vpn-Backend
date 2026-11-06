@@ -7,3 +7,5 @@ coverage/
 *.log
 .DS_Store
 *.tsbuildinfo
+node-agent/node_modules/
+node-agent/dist/
