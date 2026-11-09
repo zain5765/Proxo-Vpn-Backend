@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Harden a Horse VPN node with UFW.
+# Harden a Proxo VPN node with UFW.
 # Usage:
 #   sudo API_CIDR=1.2.3.4/32 bash firewall.sh
 # API_CIDR = IP (or range) of your NestJS control plane that may call the agent.

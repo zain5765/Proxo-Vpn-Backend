@@ -22,6 +22,6 @@ Scripts:
 | `register-server.sh` | Create server in admin API |
 | `verify-node.sh` | Local health check |
 | `agent.env.example` | Agent env template |
-| `horse-vpn-agent.service` | systemd unit |
+| `proxo-vpn-agent.service` | systemd unit |
 
 Learning notes: [`docs/LEARNING_STEP2_VPS_WIREGUARD.md`](../../docs/LEARNING_STEP2_VPS_WIREGUARD.md)

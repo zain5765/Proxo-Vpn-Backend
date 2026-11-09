@@ -6,7 +6,7 @@ export class HealthController {
   health() {
     return {
       ok: true,
-      service: 'horse-vpn-api',
+      service: 'proxo-vpn-api',
       version: '0.1.0',
     };
   }

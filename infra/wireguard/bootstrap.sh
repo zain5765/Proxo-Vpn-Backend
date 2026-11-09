@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap a Horse VPN WireGuard node on Ubuntu/Debian 22.04+.
+# Bootstrap a Proxo VPN WireGuard node on Ubuntu/Debian 22.04+.
 # Run as root on a fresh VPS.
 set -euo pipefail
 
@@ -46,14 +46,14 @@ chmod 600 "/etc/wireguard/${WG_INTERFACE}.conf"
 systemctl enable --now "wg-quick@${WG_INTERFACE}"
 
 # Persist IP forwarding
-cat > /etc/sysctl.d/99-horse-vpn.conf <<EOF
+cat > /etc/sysctl.d/99-proxo-vpn.conf <<EOF
 net.ipv4.ip_forward=1
 EOF
 sysctl --system >/dev/null
 
 echo ""
 echo "============================================"
-echo " Horse VPN WireGuard bootstrap complete"
+echo " Proxo VPN WireGuard bootstrap complete"
 echo "============================================"
 echo " Interface:     ${WG_INTERFACE}"
 echo " Listen port:   UDP ${WG_PORT}"

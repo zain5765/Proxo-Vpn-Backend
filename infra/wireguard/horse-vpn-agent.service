@@ -1,5 +1,5 @@
 [Unit]
-Description=Horse VPN node-agent
+Description=Proxo VPN node-agent
 After=network-online.target wg-quick@wg0.service
 Wants=network-online.target
 Requires=wg-quick@wg0.service
@@ -7,9 +7,9 @@ Requires=wg-quick@wg0.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/horse-vpn/node-agent
-EnvironmentFile=/opt/horse-vpn/node-agent/.env
-ExecStart=/usr/bin/node /opt/horse-vpn/node-agent/dist/index.js
+WorkingDirectory=/opt/proxo-vpn/node-agent
+EnvironmentFile=/opt/proxo-vpn/node-agent/.env
+ExecStart=/usr/bin/node /opt/proxo-vpn/node-agent/dist/index.js
 Restart=always
 RestartSec=3
 LimitNOFILE=65535

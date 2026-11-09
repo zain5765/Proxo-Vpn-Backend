@@ -31,7 +31,7 @@ function requireAgentAuth(
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
-    service: 'horse-vpn-node-agent',
+    service: 'proxo-vpn-node-agent',
     mock: WG_MOCK,
     iface: WG_INTERFACE,
     peers: wg.peerCount(),
@@ -88,6 +88,6 @@ app.get('/peers', requireAgentAuth, (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(
-    `Horse VPN node-agent on :${PORT} (mock=${WG_MOCK}, iface=${WG_INTERFACE})`,
+    `Proxo VPN node-agent on :${PORT} (mock=${WG_MOCK}, iface=${WG_INTERFACE})`,
   );
 });

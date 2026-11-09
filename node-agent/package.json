@@ -1,5 +1,5 @@
 {
-  "name": "@horse-vpn/node-agent",
+  "name": "@proxo-vpn/node-agent",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",

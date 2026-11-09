@@ -44,16 +44,16 @@ From your Mac:
 ```bash
 rsync -avz --exclude node_modules --exclude .git \
   "/Users/macbookpro/coding/horse vpn/" \
-  root@YOUR_VPS_IP:/opt/horse-vpn/src/
+  root@YOUR_VPS_IP:/opt/proxo-vpn/src/
 ```
 
-- [ ] Files present on VPS under `/opt/horse-vpn/src`
+- [ ] Files present on VPS under `/opt/proxo-vpn/src`
 
 ## 3. Bootstrap WireGuard
 
 ```bash
 ssh root@YOUR_VPS_IP
-cd /opt/horse-vpn/src/infra/wireguard
+cd /opt/proxo-vpn/src/infra/wireguard
 bash bootstrap.sh
 ```
 
@@ -81,17 +81,17 @@ sudo API_CIDR=0.0.0.0/0 bash firewall.sh
 ## 5. Deploy node-agent
 
 ```bash
-cd /opt/horse-vpn/src
-sudo REPO_ROOT=/opt/horse-vpn/src bash infra/wireguard/deploy-agent.sh
-sudo nano /opt/horse-vpn/node-agent/.env
+cd /opt/proxo-vpn/src
+sudo REPO_ROOT=/opt/proxo-vpn/src bash infra/wireguard/deploy-agent.sh
+sudo nano /opt/proxo-vpn/node-agent/.env
 # set AGENT_SECRET=same-as-API-NODE_AGENT_SECRET
 # set WG_MOCK=false
-sudo systemctl restart horse-vpn-agent
+sudo systemctl restart proxo-vpn-agent
 bash infra/wireguard/verify-node.sh
 ```
 
 - [ ] `curl http://127.0.0.1:4100/health` → `"mock":false`
-- [ ] `systemctl is-active horse-vpn-agent` → `active`
+- [ ] `systemctl is-active proxo-vpn-agent` → `active`
 
 ## 6. Register server in API
 

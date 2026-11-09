@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Quick health checks for a Horse VPN node (run on the VPS).
+# Quick health checks for a Proxo VPN node (run on the VPS).
 set -euo pipefail
 
 WG_INTERFACE="${WG_INTERFACE:-wg0}"

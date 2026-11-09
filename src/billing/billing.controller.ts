@@ -34,7 +34,7 @@ export class BillingController {
     return this.billing.entitlementFor(req.user);
   }
 
-  /** Bind Horse VPN user ↔ RevenueCat app_user_id (usually our user id or guest email). */
+  /** Bind Proxo VPN user ↔ RevenueCat app_user_id (usually our user id or guest email). */
   @UseGuards(JwtAuthGuard)
   @Post('billing/revenuecat/link')
   linkRevenueCat(

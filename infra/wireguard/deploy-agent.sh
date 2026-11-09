@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Deploy Horse VPN node-agent onto this VPS.
+# Deploy Proxo VPN node-agent onto this VPS.
 # Run from a machine that can scp, OR copy the repo to the VPS first.
 #
 # On the VPS (after bootstrap.sh), from the copied monorepo root:
 #   sudo bash infra/wireguard/deploy-agent.sh
 set -euo pipefail
 
-AGENT_DIR="${AGENT_DIR:-/opt/horse-vpn/node-agent}"
+AGENT_DIR="${AGENT_DIR:-/opt/proxo-vpn/node-agent}"
 REPO_ROOT="${REPO_ROOT:-}"
-SERVICE_NAME="horse-vpn-agent"
+SERVICE_NAME="proxo-vpn-agent"
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "Run as root"
@@ -24,7 +24,7 @@ fi
 SRC="${REPO_ROOT}/services/node-agent"
 if [[ ! -f "${SRC}/package.json" ]]; then
   echo "Cannot find services/node-agent at ${SRC}"
-  echo "Copy the Horse VPN repo to the VPS, or set REPO_ROOT=/path/to/horse-vpn"
+  echo "Copy the Proxo VPN repo to the VPS, or set REPO_ROOT=/path/to/proxo-vpn"
   exit 1
 fi
 
@@ -62,7 +62,7 @@ EOF
   echo "Wrote ${AGENT_DIR}/.env — EDIT AGENT_SECRET before production use."
 fi
 
-install -m 644 "${REPO_ROOT}/infra/wireguard/horse-vpn-agent.service" \
+install -m 644 "${REPO_ROOT}/infra/wireguard/proxo-vpn-agent.service" \
   /etc/systemd/system/${SERVICE_NAME}.service
 
 systemctl daemon-reload

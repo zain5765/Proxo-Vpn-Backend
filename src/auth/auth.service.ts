@@ -19,7 +19,7 @@ export class AuthService {
   ) {}
 
   async guest(deviceId: string) {
-    const email = `guest-${deviceId.toLowerCase()}@horsevpn.local`;
+    const email = `guest-${deviceId.toLowerCase()}@proxovpn.local`;
     let user = await this.users.findOne({ email }).exec();
     if (!user) {
       const passwordHash = await bcrypt.hash(randomBytes(24).toString('hex'), 10);

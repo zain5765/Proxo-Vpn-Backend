@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Register this VPS as a server in the Horse VPN admin API.
+# Register this VPS as a server in the Proxo VPN admin API.
 # Run on your laptop (with API reachable), not necessarily on the VPS.
 #
 # Example:

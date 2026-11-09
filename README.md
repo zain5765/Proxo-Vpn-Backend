@@ -1,4 +1,4 @@
-# Horse VPN — Backend
+# Proxo VPN — Backend
 
 Complete server-side stack:
 
@@ -11,7 +11,7 @@ Complete server-side stack:
 Sibling repos:
 
 - Clients (mobile + web): `../horse vpn`
-- VPN admin UI: `../horse-vpn-admin`
+- VPN admin UI: `../proxo-vpn-admin`
 
 ## API (local)
 
@@ -27,7 +27,7 @@ Health: `http://localhost:4000/v1/health`
 
 ```bash
 heroku login
-heroku create horse-vpn-api-YOURNAME
+heroku create proxo-vpn-api-YOURNAME
 heroku config:set USE_MEMORY_MONGO=false \
   MONGODB_URI='mongodb+srv://...' \
   JWT_SECRET="$(openssl rand -hex 32)" \

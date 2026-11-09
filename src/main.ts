@@ -27,6 +27,6 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 4000);
   // Bind all interfaces so Heroku / containers / LAN devices can reach the API.
   await app.listen(port, '0.0.0.0');
-  console.log(`Horse VPN API listening on http://0.0.0.0:${port}/v1`);
+  console.log(`Proxo VPN API listening on http://0.0.0.0:${port}/v1`);
 }
 bootstrap();

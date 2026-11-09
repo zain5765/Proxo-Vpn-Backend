@@ -1,7 +1,7 @@
 {
-  "name": "horse-vpn-backend",
+  "name": "proxo-vpn-backend",
   "version": "0.0.1",
-  "description": "Horse VPN backend — NestJS API (Heroku) + WireGuard node-agent (VPS)",
+  "description": "Proxo VPN backend — NestJS API (Heroku) + WireGuard node-agent (VPS)",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

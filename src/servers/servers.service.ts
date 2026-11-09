@@ -13,9 +13,9 @@ const SEED_SERVERS: Partial<Server>[] = [
     countryCode: 'US',
     city: 'New York',
     region: 'us-east',
-    endpointHost: 'us-east.horsevpn.local',
+    endpointHost: 'us-east.proxovpn.local',
     endpointPort: 51820,
-    publicKey: 'SEED_US_EAST_PUBLIC_KEY_REPLACE_ME===========',
+    publicKey: 'dwgwd7Snxs69h0UKELtILcar/0Ny7gaBdviGXjODnpw=',
     agentBaseUrl: DEFAULT_AGENT,
     loadPercent: 22,
     premiumOnly: false,
@@ -28,9 +28,9 @@ const SEED_SERVERS: Partial<Server>[] = [
     countryCode: 'GB',
     city: 'London',
     region: 'eu-west',
-    endpointHost: 'uk.horsevpn.local',
+    endpointHost: 'uk.proxovpn.local',
     endpointPort: 51820,
-    publicKey: 'SEED_UK_PUBLIC_KEY_REPLACE_ME==============',
+    publicKey: 'YmJWL1EYyXrcB2tQIMkYzH1ow44rWWXRLfeHfWCXkgU=',
     agentBaseUrl: DEFAULT_AGENT,
     loadPercent: 31,
     premiumOnly: false,
@@ -43,9 +43,9 @@ const SEED_SERVERS: Partial<Server>[] = [
     countryCode: 'DE',
     city: 'Frankfurt',
     region: 'eu-central',
-    endpointHost: 'de.horsevpn.local',
+    endpointHost: 'de.proxovpn.local',
     endpointPort: 51820,
-    publicKey: 'SEED_DE_PUBLIC_KEY_REPLACE_ME==============',
+    publicKey: '/aDBAlQO5lqDQiIrtAREiCr/bbE0X+CbYRotII2FUkM=',
     agentBaseUrl: DEFAULT_AGENT,
     loadPercent: 18,
     premiumOnly: false,
@@ -58,9 +58,9 @@ const SEED_SERVERS: Partial<Server>[] = [
     countryCode: 'SG',
     city: 'Singapore',
     region: 'ap-southeast',
-    endpointHost: 'sg.horsevpn.local',
+    endpointHost: 'sg.proxovpn.local',
     endpointPort: 51820,
-    publicKey: 'SEED_SG_PUBLIC_KEY_REPLACE_ME==============',
+    publicKey: 'jELKYtkCtY3qXVPacl5Nbxnrp3FrWCkm4hiO34rSmk8=',
     agentBaseUrl: DEFAULT_AGENT,
     loadPercent: 40,
     premiumOnly: true,
@@ -73,9 +73,9 @@ const SEED_SERVERS: Partial<Server>[] = [
     countryCode: 'JP',
     city: 'Tokyo',
     region: 'ap-northeast',
-    endpointHost: 'jp.horsevpn.local',
+    endpointHost: 'jp.proxovpn.local',
     endpointPort: 51820,
-    publicKey: 'SEED_JP_PUBLIC_KEY_REPLACE_ME==============',
+    publicKey: '23xjTJJMjQjP8lFKED+f50mQdqFsslNSNkXYL7fOIuQ=',
     agentBaseUrl: DEFAULT_AGENT,
     loadPercent: 27,
     premiumOnly: true,
@@ -96,6 +96,22 @@ export class ServersService implements OnModuleInit {
     const count = await this.servers.countDocuments();
     if (count === 0) {
       await this.servers.insertMany(SEED_SERVERS);
+      return;
+    }
+
+    // Keep seed public keys WireGuard-valid (32-byte base64) for native clients.
+    for (const seed of SEED_SERVERS) {
+      if (!seed.name || !seed.publicKey) continue;
+      await this.servers.updateMany(
+        {
+          name: seed.name,
+          $or: [
+            { publicKey: { $regex: /REPLACE_ME|^SEED_/ } },
+            { publicKey: { $exists: true } },
+          ],
+        },
+        { $set: { publicKey: seed.publicKey } },
+      );
     }
   }
 
