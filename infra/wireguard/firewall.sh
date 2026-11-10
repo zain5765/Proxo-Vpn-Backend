@@ -28,7 +28,7 @@ ufw allow "${SSH_PORT}/tcp" comment 'SSH'
 ufw allow "${WG_PORT}/udp" comment 'WireGuard'
 
 if [[ -n "${API_CIDR}" ]]; then
-  ufw allow from "${API_CIDR}" to any port "${AGENT_PORT}" proto tcp comment 'Horse node-agent from API'
+  ufw allow from "${API_CIDR}" to any port "${AGENT_PORT}" proto tcp comment 'Proxo node-agent from API'
 fi
 
 ufw --force enable

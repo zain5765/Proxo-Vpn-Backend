@@ -148,6 +148,18 @@ export class ServersService implements OnModuleInit {
       filter.premiumOnly = false;
     }
 
+    // Hide fake *.proxovpn.local seeds once a real node is registered,
+    // or when HIDE_SEED_SERVERS=true.
+    const hideSeeds =
+      process.env.HIDE_SEED_SERVERS === 'true' ||
+      (await this.servers.exists({
+        active: true,
+        endpointHost: { $not: /\.proxovpn\.local$/i },
+      }));
+    if (hideSeeds) {
+      filter.endpointHost = { $not: /\.proxovpn\.local$/i };
+    }
+
     const rows = await this.servers
       .find(filter)
       .sort({ loadPercent: 1, region: 1 })

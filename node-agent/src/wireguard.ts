@@ -42,6 +42,7 @@ export class WireGuardManager {
     };
 
     if (!this.mock) {
+      // PersistentKeepalive keeps NAT mappings alive on mobile networks.
       await execFileAsync('wg', [
         'set',
         this.iface,
@@ -49,6 +50,8 @@ export class WireGuardManager {
         publicKey,
         'allowed-ips',
         address,
+        'persistent-keepalive',
+        '25',
       ]);
     }
 

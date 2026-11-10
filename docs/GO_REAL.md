@@ -18,7 +18,7 @@ Providers: [Hetzner](https://www.hetzner.com/cloud), [DigitalOcean](https://www.
 API must be running locally first (`npm run start:dev` in this repo).
 
 ```bash
-cd "/Users/macbookpro/coding/horse-vpn-backend"
+cd "/Users/macbookpro/coding/Proxo-backend"
 
 # Use the same secret as NODE_AGENT_SECRET in .env
 VPS_HOST=YOUR.VPS.IP.HERE \

@@ -2,7 +2,7 @@
 # Deploy Proxo VPN node-agent onto this VPS.
 # Run from a machine that can scp, OR copy the repo to the VPS first.
 #
-# On the VPS (after bootstrap.sh), from the copied monorepo root:
+# On the VPS (after bootstrap.sh), from the copied Proxo-backend root:
 #   sudo bash infra/wireguard/deploy-agent.sh
 set -euo pipefail
 
@@ -21,10 +21,14 @@ if [[ -z "${REPO_ROOT}" ]]; then
   REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 fi
 
-SRC="${REPO_ROOT}/services/node-agent"
+# Prefer post-split layout (Proxo-backend/node-agent); fall back to legacy monorepo path.
+SRC="${REPO_ROOT}/node-agent"
 if [[ ! -f "${SRC}/package.json" ]]; then
-  echo "Cannot find services/node-agent at ${SRC}"
-  echo "Copy the Proxo VPN repo to the VPS, or set REPO_ROOT=/path/to/proxo-vpn"
+  SRC="${REPO_ROOT}/services/node-agent"
+fi
+if [[ ! -f "${SRC}/package.json" ]]; then
+  echo "Cannot find node-agent at ${REPO_ROOT}/node-agent (or services/node-agent)"
+  echo "Copy the Proxo-backend repo to the VPS, or set REPO_ROOT=/path/to/Proxo-backend"
   exit 1
 fi
 
