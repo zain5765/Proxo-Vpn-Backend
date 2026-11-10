@@ -93,6 +93,15 @@ export class ServersService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // Demo cities (Frankfurt/London/…) are opt-in only. Real nodes are
+    // registered via infra/wireguard/register-server.sh.
+    if (process.env.SEED_DEMO_SERVERS !== 'true') {
+      await this.servers.deleteMany({
+        endpointHost: /\.proxovpn\.local$/i,
+      });
+      return;
+    }
+
     const count = await this.servers.countDocuments();
     if (count === 0) {
       await this.servers.insertMany(SEED_SERVERS);
