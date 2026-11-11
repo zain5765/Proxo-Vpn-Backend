@@ -5,6 +5,7 @@ import { AdminModule } from './admin/admin.module';
 import { AdsModule } from './ads/ads.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
+import { BrowserModule } from './browser/browser.module';
 import { RateLimitMiddleware } from './common/rate-limit.middleware';
 import { createMongoOptions } from './database/mongo.factory';
 import { FeaturesModule } from './features/features.module';
@@ -24,6 +25,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     AuthModule,
     ServersModule,
     SessionsModule,
+    BrowserModule,
     BillingModule,
     AdsModule,
     AdminModule,
@@ -37,6 +39,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(RateLimitMiddleware)
-      .forRoutes('auth', 'sessions', 'billing', 'webhooks');
+      .forRoutes('auth', 'sessions', 'browser', 'billing', 'webhooks');
   }
 }
