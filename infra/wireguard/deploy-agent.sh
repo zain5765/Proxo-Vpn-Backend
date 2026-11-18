@@ -70,7 +70,9 @@ install -m 644 "${REPO_ROOT}/infra/wireguard/proxo-vpn-agent.service" \
   /etc/systemd/system/${SERVICE_NAME}.service
 
 systemctl daemon-reload
-systemctl enable --now "${SERVICE_NAME}"
+systemctl enable "${SERVICE_NAME}"
+# Always restart so code/env updates take effect (enable --now is a no-op if already running).
+systemctl restart "${SERVICE_NAME}"
 systemctl --no-pager --full status "${SERVICE_NAME}" || true
 
 echo ""

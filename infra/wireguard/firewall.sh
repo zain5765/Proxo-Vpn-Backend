@@ -7,6 +7,7 @@ set -euo pipefail
 
 WG_PORT="${WG_PORT:-51820}"
 AGENT_PORT="${AGENT_PORT:-4100}"
+HTTP_PROXY_PORT="${HTTP_PROXY_PORT:-8080}"
 SSH_PORT="${SSH_PORT:-22}"
 API_CIDR="${API_CIDR:-}"
 
@@ -26,6 +27,8 @@ ufw default allow outgoing
 
 ufw allow "${SSH_PORT}/tcp" comment 'SSH'
 ufw allow "${WG_PORT}/udp" comment 'WireGuard'
+# Browser extension clients connect directly to the HTTP CONNECT proxy.
+ufw allow "${HTTP_PROXY_PORT}/tcp" comment 'Browser HTTP proxy'
 
 if [[ -n "${API_CIDR}" ]]; then
   ufw allow from "${API_CIDR}" to any port "${AGENT_PORT}" proto tcp comment 'Proxo node-agent from API'
@@ -37,5 +40,6 @@ ufw status verbose
 echo ""
 echo "Firewall ready."
 echo "  World  -> UDP ${WG_PORT} (WireGuard)"
+echo "  World  -> TCP ${HTTP_PROXY_PORT} (browser extension proxy)"
 echo "  API    -> TCP ${AGENT_PORT} (only if API_CIDR set)"
 echo "  You    -> TCP ${SSH_PORT} (SSH)"
