@@ -1,5 +1,6 @@
 import { config as loadEnv } from 'dotenv';
 import express from 'express';
+import { existsSync, readFileSync } from 'fs';
 import { z } from 'zod';
 import { HttpProxyManager } from './http-proxy';
 import { SocksProxyManager } from './socks';
@@ -10,17 +11,28 @@ loadEnv();
 const PORT = Number(process.env.PORT ?? 4100);
 const SOCKS_PORT = Number(process.env.SOCKS_PORT ?? 1080);
 const HTTP_PROXY_PORT = Number(process.env.HTTP_PROXY_PORT ?? 8080);
+const HTTPS_PROXY_PORT = Number(process.env.HTTPS_PROXY_PORT ?? 8443);
+const PROXY_TLS_CERT = process.env.PROXY_TLS_CERT ?? '';
+const PROXY_TLS_KEY = process.env.PROXY_TLS_KEY ?? '';
+/** Hostname Chrome must use for HTTPS proxy (must match TLS cert). */
+const PROXY_PUBLIC_HOST = (process.env.PROXY_PUBLIC_HOST ?? '').trim();
 const AGENT_SECRET = process.env.AGENT_SECRET ?? 'change-me-node-agent-secret';
 const WG_INTERFACE = process.env.WG_INTERFACE ?? 'wg0';
 const WG_SUBNET_PREFIX = process.env.WG_SUBNET_PREFIX ?? '10.8.0';
 const WG_MOCK = (process.env.WG_MOCK ?? 'true') === 'true';
 const PROXY_ENABLED = (process.env.PROXY_ENABLED ?? process.env.SOCKS_ENABLED ?? 'true') === 'true';
 
+const tlsReady =
+  Boolean(PROXY_TLS_CERT) &&
+  Boolean(PROXY_TLS_KEY) &&
+  existsSync(PROXY_TLS_CERT) &&
+  existsSync(PROXY_TLS_KEY);
+
 const app = express();
 app.use(express.json());
 
 const wg = new WireGuardManager(WG_INTERFACE, WG_SUBNET_PREFIX, WG_MOCK);
-/** Chrome extension uses HTTP CONNECT + Basic auth. */
+/** Chrome extension: prefer HTTPS CONNECT (hides destination from ISP DPI). */
 const httpProxy = new HttpProxyManager(HTTP_PROXY_PORT);
 /** Optional SOCKS5 for non-Chrome clients. */
 const socks = new SocksProxyManager(SOCKS_PORT);
@@ -52,7 +64,23 @@ function removeProxyUser(username: string) {
   return a || b;
 }
 
+function advertisedProxy() {
+  if (tlsReady) {
+    return {
+      proxyPort: HTTPS_PROXY_PORT,
+      proxyScheme: 'https' as const,
+      proxyHost: PROXY_PUBLIC_HOST || undefined,
+    };
+  }
+  return {
+    proxyPort: HTTP_PROXY_PORT,
+    proxyScheme: 'http' as const,
+    proxyHost: undefined as string | undefined,
+  };
+}
+
 app.get('/health', (_req, res) => {
+  const adv = advertisedProxy();
   res.json({
     ok: true,
     service: 'proxo-vpn-node-agent',
@@ -62,7 +90,12 @@ app.get('/health', (_req, res) => {
     proxy: {
       enabled: PROXY_ENABLED,
       httpPort: HTTP_PROXY_PORT,
+      httpsPort: tlsReady ? HTTPS_PROXY_PORT : null,
       socksPort: SOCKS_PORT,
+      tls: tlsReady,
+      publicHost: PROXY_PUBLIC_HOST || null,
+      advertiseScheme: adv.proxyScheme,
+      advertisePort: adv.proxyPort,
       users: httpProxy.userCount(),
     },
   });
@@ -139,12 +172,14 @@ function provisionProxy(req: express.Request, res: express.Response) {
   const record = httpProxy
     .list()
     .find((u) => u.username === parsed.data.username);
+  const adv = advertisedProxy();
   return res.status(201).json({
     username: parsed.data.username,
     createdAt: record?.createdAt ?? new Date().toISOString(),
     expiresAt: record?.expiresAt ?? null,
-    proxyPort: HTTP_PROXY_PORT,
-    proxyScheme: 'http',
+    proxyPort: adv.proxyPort,
+    proxyScheme: adv.proxyScheme,
+    proxyHost: adv.proxyHost,
     socksPort: SOCKS_PORT,
   });
 }
@@ -172,10 +207,13 @@ app.delete('/socks/users/:username', requireAgentAuth, (req, res) => {
 });
 
 app.get('/proxy/users', requireAgentAuth, (_req, res) => {
+  const adv = advertisedProxy();
   res.json({
     users: httpProxy.list(),
     httpPort: HTTP_PROXY_PORT,
+    httpsPort: tlsReady ? HTTPS_PROXY_PORT : null,
     socksPort: SOCKS_PORT,
+    advertise: adv,
   });
 });
 
@@ -186,11 +224,22 @@ app.get('/socks/users', requireAgentAuth, (_req, res) => {
 async function boot() {
   if (PROXY_ENABLED) {
     await httpProxy.start();
+    if (tlsReady) {
+      await httpProxy.startTls(HTTPS_PROXY_PORT, {
+        cert: readFileSync(PROXY_TLS_CERT),
+        key: readFileSync(PROXY_TLS_KEY),
+      });
+    } else {
+      console.warn(
+        'HTTPS proxy disabled — set PROXY_TLS_CERT + PROXY_TLS_KEY for ISP-safe CONNECT',
+      );
+    }
     await socks.start();
   }
   app.listen(PORT, () => {
+    const adv = advertisedProxy();
     console.log(
-      `Proxo VPN node-agent on :${PORT} (mock=${WG_MOCK}, iface=${WG_INTERFACE}, httpProxy=${PROXY_ENABLED ? HTTP_PROXY_PORT : 'off'}, socks=${PROXY_ENABLED ? SOCKS_PORT : 'off'})`,
+      `Proxo VPN node-agent on :${PORT} (mock=${WG_MOCK}, iface=${WG_INTERFACE}, httpProxy=${PROXY_ENABLED ? HTTP_PROXY_PORT : 'off'}, httpsProxy=${tlsReady ? HTTPS_PROXY_PORT : 'off'}, socks=${PROXY_ENABLED ? SOCKS_PORT : 'off'}, advertise=${adv.proxyScheme}:${adv.proxyPort})`,
     );
   });
 }

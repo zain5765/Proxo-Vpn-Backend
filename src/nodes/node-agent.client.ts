@@ -101,7 +101,8 @@ export class NodeAgentClient {
   ): Promise<{
     username: string;
     proxyPort: number;
-    proxyScheme?: 'http' | 'socks5';
+    proxyScheme?: 'http' | 'https' | 'socks5';
+    proxyHost?: string;
     expiresAt: number | null;
   }> {
     const url = `${agentBaseUrl.replace(/\/$/, '')}/proxy/users`;
@@ -123,7 +124,8 @@ export class NodeAgentClient {
       return (await res.json()) as {
         username: string;
         proxyPort: number;
-        proxyScheme?: 'http' | 'socks5';
+        proxyScheme?: 'http' | 'https' | 'socks5';
+        proxyHost?: string;
         expiresAt: number | null;
       };
     } catch (error) {

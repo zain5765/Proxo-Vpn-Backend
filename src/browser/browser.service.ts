@@ -74,7 +74,8 @@ export class BrowserService {
     );
 
     let proxyPort = defaultPort;
-    let proxyScheme: 'http' | 'socks5' = 'http';
+    let proxyScheme: 'http' | 'https' | 'socks5' = 'http';
+    let proxyHost = server.endpointHost;
     try {
       const provisioned = await this.nodes.provisionSocksUser(agentBaseUrl, {
         username,
@@ -82,7 +83,16 @@ export class BrowserService {
         ttlSeconds,
       });
       proxyPort = provisioned.proxyPort || defaultPort;
-      proxyScheme = provisioned.proxyScheme === 'socks5' ? 'socks5' : 'http';
+      if (provisioned.proxyScheme === 'socks5') {
+        proxyScheme = 'socks5';
+      } else if (provisioned.proxyScheme === 'https') {
+        proxyScheme = 'https';
+      } else {
+        proxyScheme = 'http';
+      }
+      if (provisioned.proxyHost) {
+        proxyHost = provisioned.proxyHost;
+      }
     } catch (error) {
       if (this.config.get<string>('ALLOW_CONNECT_WITHOUT_AGENT') === 'true') {
         // Dev fallback — credentials will not work until a real agent is up.
@@ -102,7 +112,7 @@ export class BrowserService {
         : new Date(Date.now() + ttlSeconds * 1000).toISOString();
 
     return {
-      proxyHost: server.endpointHost,
+      proxyHost,
       proxyPort,
       proxyScheme,
       username,

@@ -1,4 +1,5 @@
 import { createServer, Socket, type Server } from 'net';
+import { createServer as createTlsServer, type TlsOptions } from 'tls';
 import { randomBytes } from 'crypto';
 
 export type ProxyUser = {
@@ -11,14 +12,18 @@ export type ProxyUser = {
 /**
  * HTTP CONNECT proxy with Basic auth — works with Chrome chrome.proxy +
  * webRequest.onAuthRequired (SOCKS5 user/pass does not).
+ *
+ * Prefer TLS (HTTPS proxy) so CONNECT destination hostnames are not visible
+ * to local ISP DPI (plain HTTP CONNECT leaks Host in cleartext).
  */
 export class HttpProxyManager {
   private readonly users = new Map<string, ProxyUser>();
-  private server: Server | null = null;
-  private readonly port: number;
+  private plainServer: Server | null = null;
+  private tlsServer: Server | null = null;
+  private readonly plainPort: number;
 
-  constructor(port: number) {
-    this.port = port;
+  constructor(plainPort: number) {
+    this.plainPort = plainPort;
   }
 
   list(): Array<Omit<ProxyUser, 'password'> & { password: '***' }> {
@@ -61,24 +66,44 @@ export class HttpProxyManager {
   }
 
   start(): Promise<void> {
-    if (this.server) return Promise.resolve();
+    if (this.plainServer) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      this.server = createServer((socket) => {
+      this.plainServer = createServer((socket) => {
         this.handleClient(socket).catch(() => socket.destroy());
       });
-      this.server.once('error', reject);
-      this.server.listen(this.port, '0.0.0.0', () => {
-        console.log(`HTTP proxy listening on 0.0.0.0:${this.port}`);
+      this.plainServer.once('error', reject);
+      this.plainServer.listen(this.plainPort, '0.0.0.0', () => {
+        console.log(`HTTP proxy listening on 0.0.0.0:${this.plainPort}`);
+        resolve();
+      });
+    });
+  }
+
+  startTls(port: number, tlsOptions: TlsOptions): Promise<void> {
+    if (this.tlsServer) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      this.tlsServer = createTlsServer(tlsOptions, (socket) => {
+        this.handleClient(socket).catch(() => socket.destroy());
+      });
+      this.tlsServer.once('error', reject);
+      this.tlsServer.listen(port, '0.0.0.0', () => {
+        console.log(`HTTPS proxy listening on 0.0.0.0:${port}`);
         resolve();
       });
     });
   }
 
   async stop(): Promise<void> {
-    const server = this.server;
-    this.server = null;
-    if (!server) return;
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    const servers = [this.plainServer, this.tlsServer].filter(
+      Boolean,
+    ) as Server[];
+    this.plainServer = null;
+    this.tlsServer = null;
+    await Promise.all(
+      servers.map(
+        (server) => new Promise<void>((resolve) => server.close(() => resolve())),
+      ),
+    );
   }
 
   private pruneExpired() {
@@ -140,7 +165,11 @@ export class HttpProxyManager {
       }
       const remote = new Socket();
       remote.once('error', () => {
-        socket.write('HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n');
+        try {
+          socket.write('HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n');
+        } catch {
+          // ignore
+        }
         socket.destroy();
       });
       remote.connect(port, host, () => {
